@@ -23,7 +23,12 @@ jobs:
 
       - name: Log in to Amazon ECR
         run: |
-          aws ecr get-login-password --region ca-central-1 | docker login --username AWS --password-stdin 123456789012.dkr.ecr.ca-central-1.amazonaws.com
+          aws ecr get-login-password --region ca-central-1 | docker login --username AWS --password-stdin 796973517423.dkr.ecr.ca-central-1.amazonaws.com
+
+      - name: Install dependencies  # ✅ NEW STEP
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
 
       - name: Build, tag, and push Docker image
         run: |
