@@ -3,42 +3,37 @@ name: Deploy to AWS Fargate
 on:
   push:
     branches:
-      - main  # Runs on push to main branch
+      - main  # This will trigger the workflow when you push to the main branch
 
 jobs:
   deploy:
     name: Build and Deploy
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest  # This runs the job on an Ubuntu runner
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v3  # This checks out your repo so the action can access the code
 
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v2
+      - name: Set up Python
+        uses: actions/setup-python@v4  # This action sets up Python on the runner
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ca-central-1  # Change if your AWS region is different
+          python-version: 3.12  # Change this to the Python version you are using, e.g., 3.8 or 3.9
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip  # Upgrades pip to the latest version
+          pip install -r requirements.txt     # Installs the Python dependencies from requirements.txt
 
       - name: Log in to Amazon ECR
         run: |
           aws ecr get-login-password --region ca-central-1 | docker login --username AWS --password-stdin 796973517423.dkr.ecr.ca-central-1.amazonaws.com
 
-      - name: Debug - List files in the workspace  # ✅ Check if requirements.txt exists
-        run: ls -la  
-
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-
       - name: Build, tag, and push Docker image
         run: |
-          docker build -t task-manager-app .
-          docker tag task-manager-app:latest 796973517423.dkr.ecr.ca-central-1.amazonaws.com/task-manager-app:latest
-          docker push 796973517423.dkr.ecr.ca-central-1.amazonaws.com/task-manager-app:latest
+          docker build -t task-manager-app .  # Builds the Docker image from the Dockerfile
+          docker tag task-manager-app:latest 796973517423.dkr.ecr.ca-central-1.amazonaws.com/task-manager-app:latest  # Tags the image
+          docker push 796973517423.dkr.ecr.ca-central-1.amazonaws.com/task-manager-app:latest  # Pushes the image to ECR
 
       - name: Update ECS Service
         run: |
-          aws ecs update-service --cluster task-manager-cluster --service task-manager-service --force-new-deployment
+          aws ecs update-service --cluster task-manager-cluster --service task-manager-service --force-new-deployment  # Updates ECS service to deploy new image
