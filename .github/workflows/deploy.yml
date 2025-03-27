@@ -8,7 +8,7 @@ on:
 jobs:
   deploy:
     name: Build and Deploy
-    runs-on: ubuntu-latest  # This runs the job on an Ubuntu runner
+    runs-on: windows-latest  # This runs the job on an Ubuntu runner
 
     steps:
       - name: Checkout repository
