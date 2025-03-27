@@ -8,7 +8,7 @@ on:
 jobs:
   deploy:
     name: Build and Deploy
-    runs-on: windows-latest  # This runs the job on an Ubuntu runner
+    runs-on: windows-latest  # This runs the job on a Windows runner
 
     steps:
       - name: Checkout repository
@@ -24,6 +24,15 @@ jobs:
           python -m pip install --upgrade pip  # Upgrades pip to the latest version
           pip install -r requirements.txt     # Installs the Python dependencies from requirements.txt
 
+      # Step to set up AWS credentials from GitHub Secrets
+      - name: Set up AWS CLI
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ca-central-1
+
+      # Log in to Amazon ECR
       - name: Log in to Amazon ECR
         run: |
           aws ecr get-login-password --region ca-central-1 | docker login --username AWS --password-stdin 796973517423.dkr.ecr.ca-central-1.amazonaws.com
